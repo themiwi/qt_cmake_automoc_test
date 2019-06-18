@@ -1,0 +1,11 @@
+if (DEFINED ENV{DESTDIR} AND NOT ENV{DESTDIR} MATCHES "/$")
+  set(ENV{DESTDIR} "$ENV{DESTDIR}/")
+endif ()
+
+include(BundleUtilities)
+
+fixup_bundle(
+    "@EXE_TO_FIXUP@"
+    "@LIBS_TO_FIXUP@"
+    "@Qt5_DIR@/../../../bin"
+    )
