@@ -7,25 +7,48 @@ option(CMAKE_AUTOMOC "Use the AUTOMOC feature" ON)
 find_package(Qt5 COMPONENTS Core Widgets CONFIG REQUIRED)
 
 ################################################################################
+# moc utility function
+################################################################################
+
+function (target_qt5_wrap_cpp TARGET)
+    get_target_property(automoc ${TARGET} AUTOMOC)
+    if (NOT automoc)
+        get_target_property(automoc_names ${TARGET} AUTOMOC_MACRO_NAMES)
+        list(JOIN automoc_names "|" automoc_names)
+        get_target_property(srcs ${TARGET} SOURCES)
+
+        set(moc_hdrs)
+        foreach (src IN LISTS srcs)
+            if (src MATCHES "\\.h(h|cc|pp|xx|\\+\\+|m|txx)?$")
+                file(READ "${src}" txt)
+                if (txt MATCHES "(${automoc_names})")
+                    list(APPEND moc_hdrs "${src}")
+                endif ()
+            endif ()
+        endforeach ()
+
+        qt5_wrap_cpp(moc_files ${moc_hdrs})
+        target_sources(${TARGET} PRIVATE ${moc_files})
+    endif ()
+endfunction ()
+
+################################################################################
 # mywidgets library
 ################################################################################
 
 add_library(mywidgets SHARED)
 target_link_libraries(mywidgets Qt5::Core Qt5::Widgets)
 
-if (NOT CMAKE_AUTOMOC)
-    qt5_wrap_cpp(MOC_SRCS mainwindow.h)
-endif ()
-
 target_sources(mywidgets
     PRIVATE
     mainwindow.cpp
-    ${MOC_SRCS}
 
     PUBLIC
     mainwindow.h
+    utils.h
     )
 
+target_qt5_wrap_cpp(mywidgets)
 
 ################################################################################
 # executable
