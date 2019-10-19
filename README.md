@@ -7,3 +7,11 @@ in multiple definitions of the moc'ed code with inconsistent linkage:
 
 * once as `__declspec(dllexport)` in the library case
 * once as implicit `__declspec(dllimport)` in the executable case.
+
+## Solution
+
+The problem was that the header `mainwindow.h` header was declared as `PUBLIC` in `CMakeLists.txt`. As such
+it will populate the `INTERFACE_SOURCES` property and will be considered as a source for the consuming
+(i.e. linking) targets. Hence, CMake did what it was supposed to do, and compiled the file twice.
+
+**Consequence**: RTFM and really know what `PUBLIC` and `INTERFACE` do... 
